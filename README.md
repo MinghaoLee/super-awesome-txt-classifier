@@ -1,2 +1,2 @@
 # super-awesome-txt-classifier
-for class
+[![Build Status](https://travis-ci.org/snakes-in-the-box/super-awesome-txt-classifier.svg?branch=master)](https://travis-ci.org/snakes-in-the-box/super-awesome-txt-classifier)
