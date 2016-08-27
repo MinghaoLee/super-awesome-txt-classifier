@@ -1,10 +1,10 @@
 /**
   * @author Brad Bazemore
   *
-  * =Overview=
-  * Will take two text files, the training data and the stop words.
-  * The stop words have to be converted to sets and then distributed out to the nodes to
-  * prevent redundant shuffling of the data.
+  *         =Overview=
+  *         Will take two text files, the training data and the stop words.
+  *         The stop words have to be converted to sets and then distributed out to the nodes to
+  *         prevent redundant shuffling of the data.
   *
   * 1. Convert doc into one RDD with each word as an element
   * 2. Remove all numbers and words with numbers in them
@@ -45,7 +45,7 @@ object Main {
       .map(PreprocessFunctions.removeSpecials)
       .map(PreprocessFunctions.removeForwardSlash)
       .map(PreprocessFunctions.removePunctuation)
-      .map(word=>word.toLowerCase())
+      .map(word => word.toLowerCase())
 
     val cleanTrainData = processedTrainData.mapPartitions {
       partition =>
@@ -54,6 +54,7 @@ object Main {
     }
 
     cleanTrainData.take(100).foreach(println)
+
   }
 }
 
