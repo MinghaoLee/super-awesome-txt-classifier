@@ -15,10 +15,10 @@ object Main {
     */
   def main(args: Array[String]): Unit ={
 
-    val conf = new SparkConf().setAppName("preprocessor").setMaster("spark://master:7077")
+    val conf = new SparkConf().setAppName("preprocessor")
     val sc = new SparkContext(conf)
 
-    val trainData = sc.textFile("/tmp/data/X_train_vsmall.txt")
+    val trainData = sc.textFile("/home/brad/Documents/InteliJProjects/super-awesome-txt-classifier/X_train_vsmall.txt")
     val processedTrainData = trainData
       .flatMap(word=>word.split(" "))
       .filter(PreprocessFunctions.removeNumbers)
@@ -26,7 +26,7 @@ object Main {
       .map(PreprocessFunctions.removeForwardSlash)
       .map(PreprocessFunctions.removePeriod)
 
-    processedTrainData.take(10).foreach(println)
+    processedTrainData.take(100).foreach(println)
   }
 }
 
@@ -64,12 +64,12 @@ object PreprocessFunctions{
   }
 
   /**
-    * Removes periods of string
+    * Removes punctuation from string
     * @param word instance of string from map
     * @return
     */
   def removePeriod(word:String):String={
-    word.replaceAll("\\.","")
+    word.replaceAll("\\p{Punct}","")
   }
 
 }
