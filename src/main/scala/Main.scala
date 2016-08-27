@@ -1,5 +1,18 @@
 /**
-  * Created by Brad Bazemore on 8/19/16.
+  * @author Brad Bazemore
+  *
+  * =Overview=
+  * Will take two text files, the training data and the stop words.
+  * The stop words have to be converted to sets and then distributed out to the nodes to
+  * prevent redundant shuffling of the data.
+  *
+  * 1. Convert doc into one RDD with each word as an element
+  * 2. Remove all numbers and words with numbers in them
+  * 3. Remove the odd special words such as &quote;
+  * 4. Remove forward slashes and replace with a space
+  * 5. Remove punctuations
+  * 6. Convert all words to lowercase
+  * 7. Remove stop words
   */
 
 import org.apache.spark._
@@ -12,6 +25,7 @@ object Main {
   /**
     * Driver method
     *
+    * @note This is for testing the preprocessing and will need to be moved elsewhere on deploy
     * @param args commandline argument to driver
     */
   def main(args: Array[String]): Unit = {
@@ -30,7 +44,7 @@ object Main {
       .filter(PreprocessFunctions.removeNumbers)
       .map(PreprocessFunctions.removeSpecials)
       .map(PreprocessFunctions.removeForwardSlash)
-      .map(PreprocessFunctions.removePeriod)
+      .map(PreprocessFunctions.removePunctuation)
       .map(word=>word.toLowerCase())
 
     val cleanTrainData = processedTrainData.mapPartitions {
@@ -85,7 +99,7 @@ object PreprocessFunctions {
     * @param word instance of string from map
     * @return
     */
-  def removePeriod(word: String): String = {
+  def removePunctuation(word: String): String = {
     word.replaceAll("\\p{Punct}", "")
   }
 
