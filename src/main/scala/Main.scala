@@ -1,9 +1,13 @@
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 
 /**
   *
   */
 object Main {
+
+  val conf = new SparkConf().setAppName("preprocessor")
+  val sc = new SparkContext(conf)
 
   val XFile = sc.textFile("Examples/Data/X_train_vsmall.txt")
   val YFile = sc.textFile("Examples/Data/Y_train_vsmall.txt")
