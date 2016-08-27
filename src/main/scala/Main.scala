@@ -19,7 +19,7 @@ def WordProbabiliy (Dic: RDD[Pair[String, Int]], word: String) : Double {
 
 object Main {
   def main(args: Array[String]): Unit ={
-
+  println(WordProbability(Dict, "the"))
 
   }
 }
