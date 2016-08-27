@@ -12,8 +12,8 @@ object Main {
   val Dict = XFile.flatMap(line=>line.split(" ")).map(word=>(word,1)).reduceByKey(_+_)
   val DictTotal = Dict.count
 
-  def WordProbabiliy (Dic: RDD[Pair[String, Int]], word: String) : Double = {
-    var filtered = Dic.filter( (w: String, _) => word == w).first()
+  def WordProbability (Dic: RDD[Pair[String, Int]], word: String) : Double = {
+    var filtered = Dic.filter( (w: String, v: Int) => word == w).first()
     return filtered(1).toDouble / DictTotal
   }
 
