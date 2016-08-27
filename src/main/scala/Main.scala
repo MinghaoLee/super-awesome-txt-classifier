@@ -18,7 +18,7 @@ object Main {
 
   def WordProbability (Dic: RDD[Pair[String, Int]], word: String) : Double = {
     var filtered = Dic.filter( (p:Pair[String,Int]) => word == p._1).first()
-    return (filtered._1).toDouble / DictTotal
+    return filtered._1.toDouble / DictTotal
   }
 
   def main(args: Array[String]): Unit ={
