@@ -3,6 +3,11 @@
   */
 object Main {
   def main(args: Array[String]): Unit ={
-    println("hello world")
+
   }
 }
+val XFile = sc.textFile("X_train_vsmall.txt")
+val YFile = sc.textFile("Y-train_vsmall.txt")
+
+
+
