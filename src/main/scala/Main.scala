@@ -5,7 +5,7 @@ import org.apache.spark.rdd.RDD
   */
 object Main {
 
-  def WordProbabiliy (Dic: RDD[Pair[String, Int]], word: String) : Double {
+  def WordProbabiliy (Dic: RDD[Pair[String, Int]], word: String) : Double = {
     var filtered = Dic.filter( (w: String, _) => word == w).first()
     return (Double)filtered(1)/(Double)DictTotal
   }
