@@ -7,7 +7,7 @@ object Main {
   }
 }
 val XFile = sc.textFile("X_train_vsmall.txt")
-val YFile = sc.textFile("Y-train_vsmall.txt")
+val YFile = sc.textFile("Y_train_vsmall.txt")
 
 
 
