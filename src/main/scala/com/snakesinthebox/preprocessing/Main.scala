@@ -59,6 +59,5 @@ object Main {
     }
 
     cleanTrainData.take(100).foreach(println)
-
   }
 }
