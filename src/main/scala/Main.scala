@@ -17,13 +17,13 @@ object Main {
   val DictTotal = Dict.count
 
   def WordProbability (Dic: RDD[Pair[String, Int]], word: String, DicTotal:Long) : Double = {
-    var filtered = Dic.filter( (p:Pair[String,Int]) => word == p._1).first()
+    val filtered = Dic.filter( (p:Pair[String,Int]) => word == p._1).first()
     return filtered._1.toDouble / DicTotal
   }
 
   def ClassProbability(ClassDic: RDD[Pair[String,Int]], ClassDicTotal:Long, ClassProportion:Double, TargetDic: RDD[Pair[String,Int]]) : Double = {
     var probability = 0.0
-    TargetDic.foreach( pair=>probability + ( pair._2 * WordProbability(ClassDic, pair._1, ClassDicTotal)) )
+    TargetDic.foreach( pair=>probability = probability + ( pair._2 * WordProbability(ClassDic, pair._1, ClassDicTotal)) )
     return probability * ClassProportion
   }
 
