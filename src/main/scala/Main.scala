@@ -21,10 +21,10 @@ object Main {
     return filtered._1.toDouble / DicTotal
   }
 
-  def ClassProbability(ClassDic: RDD[Pair[String,Int]], ClassDicTotal:Long, TargetDic: RDD[Pair[String,Int]]) : Double = {
+  def ClassProbability(ClassDic: RDD[Pair[String,Int]], ClassDicTotal:Long, ClassProportion:Double, TargetDic: RDD[Pair[String,Int]]) : Double = {
     var probability = 0.0
-
-
+    TargetDic.foreach( pair=>probability + ( pair._2 * WordProbability(ClassDic, pair._1, ClassDicTotal)) )
+    return probability * ClassProportion
   }
 
   def main(args: Array[String]): Unit ={
