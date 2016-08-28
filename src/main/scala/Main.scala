@@ -16,14 +16,14 @@ object Main {
   val Dict = XFile.flatMap(line=>line.split(" ")).map(word=>(word,1)).reduceByKey(_+_)
   val DictTotal = Dict.count
 
-  def WordProbability (Dic: RDD[Pair[String, Int]], word: String) : Double = {
+  def WordProbability (Dic: RDD[Pair[String, Int]], word: String, DicTotal:Long) : Double = {
     var filtered = Dic.filter( (p:Pair[String,Int]) => word == p._1).first()
-    return filtered._1.toDouble / DictTotal
+    return filtered._1.toDouble / DicTotal
   }
 
   def main(args: Array[String]): Unit ={
 
-    println(WordProbability(Dict, "the"))
+    println(WordProbability(Dict, "the", DictTotal))
 
   }
 }
