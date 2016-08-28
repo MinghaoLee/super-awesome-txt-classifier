@@ -18,7 +18,7 @@ package com.snakesinthebox.preprocessing
   */
 
 import com.typesafe.config.ConfigFactory
-import org.apache.spark.{SparkContext,SparkConf}
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
   * Driver object
