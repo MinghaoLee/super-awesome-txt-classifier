@@ -32,7 +32,10 @@ object Main {
   }
 
   def Classify(TargetDic: RDD[Pair[String,Int]]) : String = {
-
+    val probability1 = ClassProbability(Dict1, DictTotal1, DictProp1, TargetDic)
+    val probability2 = ClassProbability(Dict2, DictTotal2, DictProp2, TargetDic)
+    if (math.max(probability1, probability2) == probability1) return "Class1"
+    else return "Class2"
   }
 
   def main(args: Array[String]): Unit ={
