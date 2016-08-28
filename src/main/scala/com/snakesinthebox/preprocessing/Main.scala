@@ -38,8 +38,8 @@ object Main {
     val sparkConf = new SparkConf().setAppName(conf.getString("spark.appName"))
     val sc = new SparkContext(sparkConf)
 
-    val trainData = sc.textFile("/home/brad/Documents/InteliJProjects/super-awesome-txt-classifier/example/resources/x_train.txt")
-    val stopWords = sc.textFile("/home/brad/Documents/InteliJProjects/super-awesome-txt-classifier/example/resources/stopwords.txt")
+    val trainData = sc.textFile(conf.getString("data.train.path"))
+    val stopWords = sc.textFile(conf.getString("data.stopwords.path"))
 
     val stopWordsSet = stopWords.collect.toSet
     val stopWordsBC = sc.broadcast(stopWordsSet)
