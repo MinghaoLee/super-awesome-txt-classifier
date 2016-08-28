@@ -13,8 +13,10 @@ object Main {
   val YFile = sc.textFile("super-awesome-txt-classifier/Examples/Data/Y_train_vsmall.txt")
 
   //Place holders, will be replaced by preprocessing
-  val Dict = XFile.flatMap(line=>line.split(" ")).map(word=>(word,1)).reduceByKey(_+_)
-  val DictTotal = Dict.count
+  val Dict1 = XFile.flatMap(line=>line.split(" ")).map(word=>(word,1)).reduceByKey(_+_)
+  val DictTotal1 = Dict1.count
+  val Dict2 = XFile.flatMap(line=>line.split(" ")).map(word=>(word,1)).reduceByKey(_+_)
+  val DictTotal2 = Dict1.count
 
   def WordProbability (Dic: RDD[Pair[String, Int]], word: String, DicTotal:Long) : Double = {
     val filtered = Dic.filter( (p:Pair[String,Int]) => word == p._1).first()
@@ -26,6 +28,8 @@ object Main {
     TargetDic.foreach( pair=>probability = probability + ( pair._2 * WordProbability(ClassDic, pair._1, ClassDicTotal)) )
     return probability * ClassProportion
   }
+
+
 
   def main(args: Array[String]): Unit ={
 
