@@ -8,4 +8,4 @@
 ####Build for spark
 ```sbt assembly```
 ####Run in local machine
-```./spark-submit --class "com.snakesinthebox.preprocessing.Main" --master local[4] <path to jar> --config <path to config>```
+```./spark-submit --class "com.snakesinthebox.preprocessing.Main" --master local[4] <path to jar> --files <path to config>```
