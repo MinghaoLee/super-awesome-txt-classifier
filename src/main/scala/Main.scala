@@ -27,7 +27,7 @@ object Main {
 
   def classProbability(classDic: RDD[Pair[String,Int]], classDicTotal:Long, classProportion:Double, targetDic: RDD[Pair[String,Int]]) : Double = {
     var probability = 0.0
-    targetDic.foreach( pair=>probability = probability + ( pair._2 * WordProbability(classDic, pair._1, classDicTotal)) )
+    targetDic.foreach( pair=>probability = probability + ( pair._2 * wordProbability(classDic, pair._1, classDicTotal)) )
     return probability * classProportion
   }
 
@@ -41,7 +41,7 @@ object Main {
   def test(fileName:String): Unit = {
     val xTestFile = sc.textFile(fileName)
     val newFileName = "y" + fileName.drop(1)
-
+    //xTestFile.foreach()
   }
 
   def main(args: Array[String]): Unit ={
