@@ -1,4 +1,4 @@
-package com.snakesinthebox.preprocessing
+package org.snakesinthebox.preprocessing
 
 /**
   * Created by brad on 8/27/16.

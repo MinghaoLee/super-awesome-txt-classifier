@@ -1,4 +1,4 @@
-package com.snakesinthebox.preprocessing
+package org.snakesinthebox.preprocessing
 
 /**
   * @author Brad Bazemore
