@@ -16,8 +16,8 @@ package org.snakesinthebox.preprocessing
   * 6. Convert all words to lowercase
   * 7. Remove stop words
   *
-  * WARNING
-  * technical debt is > 9000
+  *         WARNING
+  *         technical debt is > 9000
   */
 
 import com.typesafe.config.ConfigFactory
@@ -52,7 +52,7 @@ object Main {
     val catData = categories.zip(trainData)
 
     val cData = catData
-      .filter({case (key,value)=>key.contains("CCAT")})
+      .filter({ case (key, value) => key.contains("CCAT") })
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
@@ -62,7 +62,7 @@ object Main {
       .map(word => word.toLowerCase())
 
     val gData = catData
-      .filter({case (key,value)=>key.contains("GCAT")})
+      .filter({ case (key, value) => key.contains("GCAT") })
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
@@ -72,7 +72,7 @@ object Main {
       .map(word => word.toLowerCase())
 
     val mData = catData
-      .filter({case (key,value)=>key.contains("MCAT")})
+      .filter({ case (key, value) => key.contains("MCAT") })
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
@@ -82,7 +82,7 @@ object Main {
       .map(word => word.toLowerCase())
 
     val eData = catData
-      .filter({case (key,value)=>key.contains("ECAT")})
+      .filter({ case (key, value) => key.contains("ECAT") })
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
@@ -97,7 +97,7 @@ object Main {
         partition.filter(word => !stopWordsSet.contains(word))
     }
     val cWordCount = cClean
-      .map(word=>(word,1.0))
+      .map(word => (word, 1.0))
       .reduceByKey(_ + _)
 
 
@@ -107,7 +107,7 @@ object Main {
         partition.filter(word => !stopWordsSet.contains(word))
     }
     val gWordCount = gClean
-      .map(word=>(word,1.0))
+      .map(word => (word, 1.0))
       .reduceByKey(_ + _)
 
 
@@ -117,7 +117,7 @@ object Main {
         partition.filter(word => !stopWordsSet.contains(word))
     }
     val mWordCount = mClean
-      .map(word=>(word,1.0))
+      .map(word => (word, 1.0))
       .reduceByKey(_ + _)
 
 
@@ -127,14 +127,19 @@ object Main {
         partition.filter(word => !stopWordsSet.contains(word))
     }
     val eWordCount = eClean
-      .map(word=>(word,1.0))
+      .map(word => (word, 1.0))
       .reduceByKey(_ + _)
 
-    val docTotal = (cWordCount++gWordCount++mWordCount++eWordCount)
+    val docTotal = (cWordCount ++ gWordCount ++ mWordCount ++ eWordCount)
       .reduceByKey(_ + _)
-    val cFraction = (cWordCount ++ docTotal).reduceByKey(_ / _)
 
-    /*println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+    val cFraction = cWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
+    val gFraction = gWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
+    val mFraction = mWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
+    val eFraction = eWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
+
+
+    println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
     cWordCount.take(10).foreach(println)
     println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
     gWordCount.take(10).foreach(println)
@@ -169,6 +174,5 @@ object Main {
       return "test"
     }
 
-*/
   }
 }
