@@ -51,8 +51,9 @@ object Main {
 
     val catData = categories.zip(trainData)
 
-    val cData = catData
+    val cDocs = catData
       .filter({ case (key, value) => key.contains("CCAT") })
+    val cData = cDocs
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
@@ -61,8 +62,9 @@ object Main {
       .map(Preprocessor.removePunctuation)
       .map(word => word.toLowerCase())
 
-    val gData = catData
+    val gDocs = catData
       .filter({ case (key, value) => key.contains("GCAT") })
+    val gData = gDocs
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
@@ -71,8 +73,9 @@ object Main {
       .map(Preprocessor.removePunctuation)
       .map(word => word.toLowerCase())
 
-    val mData = catData
+    val mDocs = catData
       .filter({ case (key, value) => key.contains("MCAT") })
+    val mData = mDocs
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
@@ -81,8 +84,9 @@ object Main {
       .map(Preprocessor.removePunctuation)
       .map(word => word.toLowerCase())
 
-    val eData = catData
+    val eDocs = catData
       .filter({ case (key, value) => key.contains("ECAT") })
+    val eData = eDocs
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
@@ -137,12 +141,16 @@ object Main {
     val mFraction = mWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
     val eFraction = eWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
 
-    val totalDocs = cData.count()+gData.count()+mData.count()+eData.count()
+    val totalDocs:Double = cDocs.count()+gDocs.count()+mDocs.count()+eDocs.count()
 
-    coolNP(testData.first())
+    val stuffs:Array[String] = testData.collect()
+
+    for(doc<-stuffs){
+      println(coolNP(doc))
+    }
 
     def coolNP(doc:String):String={
-      val docRDD = sc.parallelize(doc)
+      val docRDD = sc.parallelize(List(doc))
       val tData = docRDD
         .flatMap(word => word.toString.split(" "))
         .filter(Preprocessor.removeNumbers)
@@ -159,12 +167,34 @@ object Main {
         .map(word => (word, 1.0))
         .reduceByKey(_ + _)
 
+
+      val cPrior = cDocs.count()/totalDocs
       val cFound = tWordCount.join(cFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val cConf = cFound.first._2._2*cPrior
 
-      cFound.values.collect().foreach(println)
+      val gPrior = gDocs.count()/totalDocs
+      val gFound = tWordCount.join(gFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val gConf = gFound.first._2._2*gPrior
 
-      return "test"
+      val mPrior = mDocs.count()/totalDocs
+      val mFound = tWordCount.join(mFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val mConf = mFound.first._2._2*mPrior
+
+      val ePrior = eDocs.count()/totalDocs
+      val eFound = tWordCount.join(eFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val eConf = eFound.first._2._2*ePrior
+
+/*      println("###################################")
+      println(s"CCAT: $cConf")
+      println(s"GCAT: $gConf")
+      println(s"MCAT: $mConf")
+      println(s"ECAT: $eConf")
+      println("###################################")*/
+
+      val confs:Map[Double, String] = Map(cConf->"CCAT",gConf->"GCAT",mConf->"MCAT",eConf->"ECAT")
+
+      confs.maxBy(_._1)._2
+
     }
-
   }
 }
