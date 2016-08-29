@@ -15,6 +15,9 @@ package com.snakesinthebox.preprocessing
   * 5. Remove punctuations
   * 6. Convert all words to lowercase
   * 7. Remove stop words
+  *
+  * WARNING
+  * technical debt is > 9000
   */
 
 import com.typesafe.config.ConfigFactory
@@ -39,6 +42,7 @@ object Main {
     val sc = new SparkContext(sparkConf)
 
     val trainData = sc.textFile(conf.getString("data.train.doc.path"))
+    val testData = sc.textFile(conf.getString("data.test.doc.path"))
     val categories = sc.textFile(conf.getString("data.train.cat.path"))
     val stopWords = sc.textFile(conf.getString("data.stopwords.path"))
 
@@ -140,6 +144,33 @@ object Main {
 
     docTotal.take(10).foreach(println)
 
+    val totalDocs = cData.count()+gData.count()+mData.count()+eData.count()
+
+    def coolNP(doc:String):String={
+      val docRDD = sc.parallelize(doc)
+
+    }
+
+    val solution = testData.map{
+      doc =>
+        val docRDD = sc.parallelize(doc)
+        val tData = docRDD
+          .flatMap(word => word.split(" "))
+          .filter(Preprocessor.removeNumbers)
+          .map(Preprocessor.removeSpecials)
+          .map(Preprocessor.removeForwardSlash)
+          .map(Preprocessor.removePunctuation)
+          .map(word => word.toLowerCase())
+        val tClean = tData.mapPartitions {
+          partition =>
+            val stopWordsSet = stopWordsBC.value
+            partition.filter(word => !stopWordsSet.contains(word))
+        }
+        val tWordCount = tClean
+          .map(word=>(word,1))
+          .reduceByKey(_ + _)
+        return "test"
+    }
 
   }
 }
