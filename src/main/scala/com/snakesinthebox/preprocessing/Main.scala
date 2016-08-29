@@ -38,13 +38,18 @@ object Main {
     val sparkConf = new SparkConf().setAppName(conf.getString("spark.appName"))
     val sc = new SparkContext(sparkConf)
 
-    val trainData = sc.textFile(conf.getString("data.train.path"))
+    val trainData = sc.textFile(conf.getString("data.train.doc.path"))
+    val categories = sc.textFile(conf.getString("data.train.cat.path"))
     val stopWords = sc.textFile(conf.getString("data.stopwords.path"))
 
     val stopWordsSet = stopWords.collect.toSet
     val stopWordsBC = sc.broadcast(stopWordsSet)
 
-    val processedTrainData = trainData
+    val catData = categories.zip(trainData)
+
+    val cData = catData
+      .filter({case (key,value)=>key.contains("CCAT")})
+      .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
       .map(Preprocessor.removeSpecials)
@@ -52,12 +57,82 @@ object Main {
       .map(Preprocessor.removePunctuation)
       .map(word => word.toLowerCase())
 
-    val cleanTrainData = processedTrainData.mapPartitions {
+    val gData = catData
+      .filter({case (key,value)=>key.contains("GCAT")})
+      .values
+      .flatMap(word => word.split(" "))
+      .filter(Preprocessor.removeNumbers)
+      .map(Preprocessor.removeSpecials)
+      .map(Preprocessor.removeForwardSlash)
+      .map(Preprocessor.removePunctuation)
+      .map(word => word.toLowerCase())
+
+    val mData = catData
+      .filter({case (key,value)=>key.contains("MCAT")})
+      .values
+      .flatMap(word => word.split(" "))
+      .filter(Preprocessor.removeNumbers)
+      .map(Preprocessor.removeSpecials)
+      .map(Preprocessor.removeForwardSlash)
+      .map(Preprocessor.removePunctuation)
+      .map(word => word.toLowerCase())
+
+    val eData = catData
+      .filter({case (key,value)=>key.contains("ECAT")})
+      .values
+      .flatMap(word => word.split(" "))
+      .filter(Preprocessor.removeNumbers)
+      .map(Preprocessor.removeSpecials)
+      .map(Preprocessor.removeForwardSlash)
+      .map(Preprocessor.removePunctuation)
+      .map(word => word.toLowerCase())
+
+    val cClean = cData.mapPartitions {
       partition =>
         val stopWordsSet = stopWordsBC.value
         partition.filter(word => !stopWordsSet.contains(word))
     }
+    val cWordCount = cClean
+      .map(word=>(word,1))
+      .reduceByKey(_ + _)
 
-    cleanTrainData.take(100).foreach(println)
+
+    val gClean = gData.mapPartitions {
+      partition =>
+        val stopWordsSet = stopWordsBC.value
+        partition.filter(word => !stopWordsSet.contains(word))
+    }
+    val gWordCount = gClean
+      .map(word=>(word,1))
+      .reduceByKey(_ + _)
+
+
+    val mClean = mData.mapPartitions {
+      partition =>
+        val stopWordsSet = stopWordsBC.value
+        partition.filter(word => !stopWordsSet.contains(word))
+    }
+    val mWordCount = mClean
+      .map(word=>(word,1))
+      .reduceByKey(_ + _)
+
+
+    val eClean = eData.mapPartitions {
+      partition =>
+        val stopWordsSet = stopWordsBC.value
+        partition.filter(word => !stopWordsSet.contains(word))
+    }
+    val eWordCount = eClean
+      .map(word=>(word,1))
+      .reduceByKey(_ + _)
+
+    println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+    cWordCount.take(10).foreach(println)
+    println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
+    gWordCount.take(10).foreach(println)
+    println("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM")
+    mWordCount.take(10).foreach(println)
+    println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
+    eWordCount.take(10).foreach(println)
   }
 }
