@@ -120,7 +120,6 @@ object Main {
       .map(word => (word, 1.0))
       .reduceByKey(_ + _)
 
-
     val eClean = eData.mapPartitions {
       partition =>
         val stopWordsSet = stopWordsBC.value
@@ -138,18 +137,6 @@ object Main {
     val mFraction = mWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
     val eFraction = eWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
 
-
-    println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
-    cWordCount.take(10).foreach(println)
-    println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
-    gWordCount.take(10).foreach(println)
-    println("MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM")
-    mWordCount.take(10).foreach(println)
-    println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
-    eWordCount.take(10).foreach(println)
-
-    docTotal.take(10).foreach(println)
-
     val totalDocs = cData.count()+gData.count()+mData.count()+eData.count()
 
     def coolNP(doc:String):String={
@@ -166,10 +153,7 @@ object Main {
           val stopWordsSet = stopWordsBC.value
           partition.filter(word => !stopWordsSet.contains(word))
       }
-      val tWordCount = tClean
-        .map(word=>(word,1))
-        .reduceByKey(_ + _)
-
+      val tWordCount = tClean.distinct()
 
       return "test"
     }
