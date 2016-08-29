@@ -126,6 +126,9 @@ object Main {
       .map(word=>(word,1))
       .reduceByKey(_ + _)
 
+    val docTotal = (cWordCount++gWordCount++mWordCount++eWordCount)
+      .reduceByKey(_ + _)
+
     println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
     cWordCount.take(10).foreach(println)
     println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
@@ -134,5 +137,9 @@ object Main {
     mWordCount.take(10).foreach(println)
     println("EEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE")
     eWordCount.take(10).foreach(println)
+
+    docTotal.take(10).foreach(println)
+
+
   }
 }
