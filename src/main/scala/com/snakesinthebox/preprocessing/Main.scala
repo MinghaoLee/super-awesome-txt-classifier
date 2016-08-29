@@ -97,7 +97,7 @@ object Main {
         partition.filter(word => !stopWordsSet.contains(word))
     }
     val cWordCount = cClean
-      .map(word=>(word,1))
+      .map(word=>(word,1.0))
       .reduceByKey(_ + _)
 
 
@@ -107,7 +107,7 @@ object Main {
         partition.filter(word => !stopWordsSet.contains(word))
     }
     val gWordCount = gClean
-      .map(word=>(word,1))
+      .map(word=>(word,1.0))
       .reduceByKey(_ + _)
 
 
@@ -117,7 +117,7 @@ object Main {
         partition.filter(word => !stopWordsSet.contains(word))
     }
     val mWordCount = mClean
-      .map(word=>(word,1))
+      .map(word=>(word,1.0))
       .reduceByKey(_ + _)
 
 
@@ -127,13 +127,14 @@ object Main {
         partition.filter(word => !stopWordsSet.contains(word))
     }
     val eWordCount = eClean
-      .map(word=>(word,1))
+      .map(word=>(word,1.0))
       .reduceByKey(_ + _)
 
     val docTotal = (cWordCount++gWordCount++mWordCount++eWordCount)
       .reduceByKey(_ + _)
+    val cFraction = (cWordCount ++ docTotal).reduceByKey(_ / _)
 
-    println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
+    /*println("CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC")
     cWordCount.take(10).foreach(println)
     println("GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG")
     gWordCount.take(10).foreach(println)
@@ -148,29 +149,26 @@ object Main {
 
     def coolNP(doc:String):String={
       val docRDD = sc.parallelize(doc)
+      val tData = docRDD
+        .flatMap(word => word.toString.split(" "))
+        .filter(Preprocessor.removeNumbers)
+        .map(Preprocessor.removeSpecials)
+        .map(Preprocessor.removeForwardSlash)
+        .map(Preprocessor.removePunctuation)
+        .map(word => word.toLowerCase())
+      val tClean = tData.mapPartitions {
+        partition =>
+          val stopWordsSet = stopWordsBC.value
+          partition.filter(word => !stopWordsSet.contains(word))
+      }
+      val tWordCount = tClean
+        .map(word=>(word,1))
+        .reduceByKey(_ + _)
 
+
+      return "test"
     }
 
-    val solution = testData.map{
-      doc =>
-        val docRDD = sc.parallelize(doc)
-        val tData = docRDD
-          .flatMap(word => word.split(" "))
-          .filter(Preprocessor.removeNumbers)
-          .map(Preprocessor.removeSpecials)
-          .map(Preprocessor.removeForwardSlash)
-          .map(Preprocessor.removePunctuation)
-          .map(word => word.toLowerCase())
-        val tClean = tData.mapPartitions {
-          partition =>
-            val stopWordsSet = stopWordsBC.value
-            partition.filter(word => !stopWordsSet.contains(word))
-        }
-        val tWordCount = tClean
-          .map(word=>(word,1))
-          .reduceByKey(_ + _)
-        return "test"
-    }
-
+*/
   }
 }
