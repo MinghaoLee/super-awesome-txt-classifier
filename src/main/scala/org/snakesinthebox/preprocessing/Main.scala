@@ -139,6 +139,8 @@ object Main {
 
     val totalDocs = cData.count()+gData.count()+mData.count()+eData.count()
 
+    coolNP(testData.first())
+
     def coolNP(doc:String):String={
       val docRDD = sc.parallelize(doc)
       val tData = docRDD
@@ -153,7 +155,13 @@ object Main {
           val stopWordsSet = stopWordsBC.value
           partition.filter(word => !stopWordsSet.contains(word))
       }
-      val tWordCount = tClean.distinct()
+      val tWordCount = tClean
+        .map(word => (word, 1.0))
+        .reduceByKey(_ + _)
+
+      val cFound = tWordCount.join(cFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+
+      cFound.values.collect().foreach(println)
 
       return "test"
     }
