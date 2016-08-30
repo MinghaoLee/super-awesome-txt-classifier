@@ -38,12 +38,6 @@ object Main {
     else return "Class2"
   }
 
-  def test(fileName:String): Unit = {
-    val xTestFile = sc.textFile(fileName)
-    val newFileName = "y" + fileName.drop(1)
-    //xTestFile.foreach()
-  }
-
   def main(args: Array[String]): Unit ={
 
   }
