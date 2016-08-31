@@ -1,4 +1,3 @@
-package org.snakesinthebox.preprocessing
 
 /**
   * @author Brad Bazemore
@@ -22,6 +21,7 @@ package org.snakesinthebox.preprocessing
 
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.{SparkConf, SparkContext}
+import org.snakesinthebox.preprocessing.Preprocessor
 
 /**
   * Driver object
