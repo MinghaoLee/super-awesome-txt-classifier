@@ -9,6 +9,8 @@ import org.snakesinthebox.preprocessing.Preprocessor
   */
 object LogisticReg {
 
+  val learningRate = .01
+
 
   val conf = ConfigFactory.load()
 
@@ -113,6 +115,26 @@ object LogisticReg {
 
   val eWeights = cWordCount.mapValues((value) => 1.0)
 
+  def sumWeightFunction(cat :String) :Double = {
+    val accum = sc.doubleAccumulator
+    if (cat == "CCAT") {
+      val weightedDict = cWordCount.join(cWeights).mapValues((t:(Double,Double)) => t._1*t._2)
+      weightedDict.map(pair => accum.add(pair._2))
+    }
+    else if (cat == "GCAT") {
+      val weightedDict = gWordCount.join(gWeights).mapValues((t:(Double,Double)) => t._1*t._2)
+      weightedDict.map(pair => accum.add(pair._2))
+    }
+    else if (cat == "MCAT") {
+      val weightedDict = mWordCount.join(mWeights).mapValues((t:(Double,Double)) => t._1*t._2)
+      weightedDict.map(pair => accum.add(pair._2))
+    }
+    else {
+      val weightedDict = eWordCount.join(eWeights).mapValues((t:(Double,Double)) => t._1*t._2)
+      weightedDict.map(pair => accum.add(pair._2))
+    }
+    return accum.value
+  }
 
 
 }
