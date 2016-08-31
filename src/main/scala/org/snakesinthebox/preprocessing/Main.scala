@@ -49,7 +49,10 @@ object Main {
     val stopWordsSet = stopWords.collect.toSet
     val stopWordsBC = sc.broadcast(stopWordsSet)
 
-    val catData = categories.zip(trainData)
+    val catPrime = categories.zipWithIndex().map(_.swap)
+    val trainPrime = trainData.zipWithIndex().map(_.swap)
+
+    val catData = catPrime.join(trainPrime).values
 
     val cDocs = catData
       .filter({ case (key, value) => key.contains("CCAT") })
