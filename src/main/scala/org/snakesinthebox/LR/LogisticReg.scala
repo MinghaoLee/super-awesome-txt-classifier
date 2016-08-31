@@ -78,6 +78,7 @@ object LogisticReg {
     .map(word => (word, 1.0))
     .reduceByKey(_ + _)
 
+  val cWeights = cWordCount.mapValues((value) => 1.0)
 
   val gClean = gData.mapPartitions {
     partition =>
@@ -88,6 +89,7 @@ object LogisticReg {
     .map(word => (word, 1.0))
     .reduceByKey(_ + _)
 
+  val gWeights = cWordCount.mapValues((value) => 1.0)
 
   val mClean = mData.mapPartitions {
     partition =>
@@ -98,6 +100,8 @@ object LogisticReg {
     .map(word => (word, 1.0))
     .reduceByKey(_ + _)
 
+  val mWeights = cWordCount.mapValues((value) => 1.0)
+
   val eClean = eData.mapPartitions {
     partition =>
       val stopWordsSet = stopWordsBC.value
@@ -106,6 +110,9 @@ object LogisticReg {
   val eWordCount = eClean
     .map(word => (word, 1.0))
     .reduceByKey(_ + _)
+
+  val eWeights = cWordCount.mapValues((value) => 1.0)
+
 
 
 }
