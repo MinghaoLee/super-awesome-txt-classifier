@@ -136,5 +136,17 @@ object LogisticReg {
     return accum.value
   }
 
+  def calculateTrainingProb(cat :String) :Double = {
+    val categories = Array("CCAT", "GCAT", "MCAT", "ECAT")
+    val numerator = Math.pow(Math.E, sumWeightFunction(cat))
+    var denominator = 0.0
+    categories.foreach(c =>
+      if (c != cat) {
+        denominator += Math.pow(Math.E, sumWeightFunction(c))
+      }
+    )
+    denominator += 1.0
+    return numerator/denominator
+  }
 
 }
