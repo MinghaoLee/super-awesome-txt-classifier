@@ -42,4 +42,6 @@ trait PreprocessorFunctions {
     */
   def removePunctuation(word: String): String
 
+  //Need to have custom zip function
+
 }

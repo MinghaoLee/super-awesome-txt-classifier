@@ -1,27 +1,6 @@
-package org.snakesinthebox.preprocessing
-
-/**
-  * @author Brad Bazemore
-  *
-  *         =Overview=
-  *         Will take two text files, the training data and the stop words.
-  *         The stop words have to be converted to sets and then distributed out to the nodes to
-  *         prevent redundant shuffling of the data.
-  *
-  * 1. Convert doc into one RDD with each word as an element
-  * 2. Remove all numbers and words with numbers in them
-  * 3. Remove the odd special words such as &quote;
-  * 4. Remove forward slashes and replace with a space
-  * 5. Remove punctuations
-  * 6. Convert all words to lowercase
-  * 7. Remove stop words
-  *
-  *         WARNING
-  *         technical debt is > 9000
-  */
-
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.{SparkConf, SparkContext}
+import org.snakesinthebox.preprocessing.Preprocessor
 
 /**
   * Driver object
