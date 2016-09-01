@@ -157,15 +157,15 @@ object LogisticReg {
     }
     else if (cat == "GCAT") {
       val probSum = learningRate * ( (1 - calculateTrainingProb("GCAT")) - (calculateTrainingProb("CCAT") + calculateTrainingProb("MCAT") + calculateTrainingProb("ECAT")) )
-      cWeights = cWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
+      gWeights = gWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
     }
     else if (cat == "MCAT") {
       val probSum = learningRate * ( (1 - calculateTrainingProb("MCAT")) - (calculateTrainingProb("CCAT") + calculateTrainingProb("GCAT") + calculateTrainingProb("ECAT")) )
-      cWeights = cWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
+      mWeights = mWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
     }
     else {
       val probSum = learningRate * ( (1 - calculateTrainingProb("ECAT")) - (calculateTrainingProb("CCAT") + calculateTrainingProb("GCAT") + calculateTrainingProb("MCAT")) )
-      cWeights = cWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
+      eWeights = eWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
     }
   }
 
