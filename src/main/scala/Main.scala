@@ -1,5 +1,8 @@
 import com.typesafe.config.ConfigFactory
+import org.apache.spark.broadcast.Broadcast
+import org.apache.spark.rdd.RDD
 import org.apache.spark.{SparkConf, SparkContext}
+import org.snakesinthebox.ml.classification.NaiveBayes
 import org.snakesinthebox.preprocessing.Preprocessor
 
 /**
@@ -26,13 +29,16 @@ object Main {
     val stopWords = sc.textFile(conf.getString("data.stopwords.path"))
 
     val stopWordsSet = stopWords.collect.toSet
-    val stopWordsBC = sc.broadcast(stopWordsSet)
+    val stopWordsBC: Broadcast[Set[String]] = sc.broadcast(stopWordsSet)
 
-    val catData = categories.zip(trainData)
+    val catPrime = categories.zipWithIndex().map(_.swap)
+    val trainPrime = trainData.zipWithIndex().map(_.swap)
+
+    val catData = catPrime.join(trainPrime).values
 
     val cDocs = catData
-      .filter({ case (key, value) => key.contains("CCAT") })
-    val cData = cDocs
+      .filter({ case (key, value) => key.contains("GCAT") })
+    val cData: RDD[String] = cDocs
       .values
       .flatMap(word => word.split(" "))
       .filter(Preprocessor.removeNumbers)
