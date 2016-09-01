@@ -54,7 +54,7 @@ object NaiveBayes extends NBData with Serializable {
       val cleanData2 = removeStopWords(cleanData)
       catDocs.append(wordCount(cleanData2))
     }
-    totalWords = catDocs.reduce(_ ++ _)
+    totalWords = catDocs.reduce(_ ++ _).reduceByKey(_ + _)
     normalizer = totalWords.map(k => (k._1, 1.0))
     catDocsSmooth = catDocs.map(c => smooth(c, normalizer))
     val totalSmooth = smooth(totalWords, normalizer)
@@ -64,7 +64,6 @@ object NaiveBayes extends NBData with Serializable {
     for (count<-catDocCount){
       priors.append(prior(count,totalDocsCount))
     }
-    priors.foreach(println)
   }
 
   /**
@@ -86,28 +85,16 @@ object NaiveBayes extends NBData with Serializable {
     * @return
     */
   def coolNP(doc: RDD[String]): String = {
-    val tData = doc
-      .flatMap(word => word.toString.split(" "))
-      .filter(Preprocessor.removeNumbers)
-      .map(Preprocessor.removeSpecials)
-      .map(Preprocessor.removeForwardSlash)
-      .map(Preprocessor.removePunctuation)
-      .map(word => word.toLowerCase())
-    val tClean = tData.mapPartitions {
-      partition =>
-        val stopWordsSet = stopWordsBC.value
-        partition.filter(word => !stopWordsSet.contains(word))
-    }
-    val tWordCount = tClean
-      .map(word => (word, 1.0))
-      .reduceByKey(_ + _)
+    val tData = clean(doc)
+    val tClean = removeStopWords(tData)
+    val tWordCount = wordCount(tClean)
     val testDataSmooth = smooth(tWordCount, normalizer)
 
     val results: ListBuffer[Double] = ListBuffer()
 
     var i = 0
     for (cat <- catFractions) {
-      val found = testDataSmooth.join(cat).reduceByKey((c: (Double, Double), t: (Double, Double)) => (c._1 + c._2, t._1 * t._2))
+      val found = testDataSmooth.join(cat).reduceByKey((c: (Double, Double), t: (Double, Double)) => (0,c._1 * c._2 * t._1 * t._2))
       results.append(found.first._2._2)
       i = i + 1
     }
@@ -199,8 +186,6 @@ object NaiveBayes extends NBData with Serializable {
     * @return
     */
   def trainFractions(catSmooth: RDD[(String, Double)], totalSmooth: RDD[(String, Double)]): RDD[(String, Double)] = {
-    catSmooth.foreach(println)
-    System.exit(0)
     catSmooth.join(totalSmooth).mapValues((t: (Double, Double)) => t._1 / t._2)
   }
 
