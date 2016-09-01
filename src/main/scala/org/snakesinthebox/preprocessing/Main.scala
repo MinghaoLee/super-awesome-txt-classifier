@@ -162,7 +162,9 @@ object Main {
     }
 
     def coolNP(doc:String):String={
+
       val docRDD = sc.parallelize(List(doc))
+
       val tData = docRDD
         .flatMap(word => word.toString.split(" "))
         .filter(Preprocessor.removeNumbers)
@@ -170,30 +172,34 @@ object Main {
         .map(Preprocessor.removeForwardSlash)
         .map(Preprocessor.removePunctuation)
         .map(word => word.toLowerCase())
+
       val tClean = tData.mapPartitions {
         partition =>
           val stopWordsSet = stopWordsBC.value
           partition.filter(word => !stopWordsSet.contains(word))
       }
+
       val tWordCount = tClean
         .map(word => (word, 1.0))
         .reduceByKey(_ + _)
 
+      val testSmooth = (tWordCount ++ normalizer).reduceByKey(_ + _)
+
 
       val cPrior = cDocs.count()/totalDocs
-      val cFound = tWordCount.join(cFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val cFound = tWordCount.join(cFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(0,c._1*c._2*t._1*t._2))
       val cConf = cFound.first._2._2*cPrior
 
       val gPrior = gDocs.count()/totalDocs
-      val gFound = tWordCount.join(gFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val gFound = tWordCount.join(gFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(0,c._1*c._2*t._1*t._2))
       val gConf = gFound.first._2._2*gPrior
 
       val mPrior = mDocs.count()/totalDocs
-      val mFound = tWordCount.join(mFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val mFound = tWordCount.join(mFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(0,c._1*c._2*t._1*t._2))
       val mConf = mFound.first._2._2*mPrior
 
       val ePrior = eDocs.count()/totalDocs
-      val eFound = tWordCount.join(eFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val eFound = tWordCount.join(eFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(0,c._1*c._2*t._1*t._2))
       val eConf = eFound.first._2._2*ePrior
 
 
