@@ -34,9 +34,10 @@ object Main {
     val catPrime = categories.zipWithIndex().map(_.swap)
     val trainPrime = trainData.zipWithIndex().map(_.swap)
 
-    val catData = catPrime.join(trainPrime).values
+    val catData: RDD[(String, String)] = catPrime.join(trainPrime).values
 
-    val cDocs = catData
+
+    val cDocs: RDD[(String, String)] = catData
       .filter({ case (key, value) => key.contains("GCAT") })
     val cData: RDD[String] = cDocs
       .values
@@ -79,7 +80,7 @@ object Main {
       .map(Preprocessor.removeForwardSlash)
       .map(Preprocessor.removePunctuation)
       .map(word => word.toLowerCase())
-
+//#
     val cClean = cData.mapPartitions {
       partition =>
         val stopWordsSet = stopWordsBC.value
@@ -118,10 +119,12 @@ object Main {
       .map(word => (word, 1.0))
       .reduceByKey(_ + _)
 
-    val docTotal = (cWordCount ++ gWordCount ++ mWordCount ++ eWordCount)
+    val docTotal: RDD[(String, Double)] = (cWordCount ++ gWordCount ++ mWordCount ++ eWordCount)
       .reduceByKey(_ + _)
 
-    val cFraction = cWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
+    val normalizer=docTotal.map(k=>(k._1,1))
+
+    val cFraction: RDD[(String, Double)] = cWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
     val gFraction = gWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
     val mFraction = mWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
     val eFraction = eWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
@@ -135,7 +138,7 @@ object Main {
     }
 
     def coolNP(doc:String):String={
-      val docRDD = sc.parallelize(List(doc))
+      val docRDD: RDD[String] = sc.parallelize(List(doc))
       val tData = docRDD
         .flatMap(word => word.toString.split(" "))
         .filter(Preprocessor.removeNumbers)
@@ -153,7 +156,7 @@ object Main {
         .reduceByKey(_ + _)
 
 
-      val cPrior = cDocs.count()/totalDocs
+      val cPrior: Double = cDocs.count()/totalDocs
       val cFound = tWordCount.join(cFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
       val cConf = cFound.first._2._2*cPrior
 
