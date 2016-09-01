@@ -139,10 +139,19 @@ object Main {
     val docTotal = (cWordCount ++ gWordCount ++ mWordCount ++ eWordCount)
       .reduceByKey(_ + _)
 
-    val cFraction = cWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
-    val gFraction = gWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
-    val mFraction = mWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
-    val eFraction = eWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
+    val normalizer = docTotal.map(k => (k._1, 1.0))
+
+    val cSmooth = (cWordCount ++ normalizer).reduceByKey(_ + _)
+    val gSmooth = (gWordCount ++ normalizer).reduceByKey(_ + _)
+    val mSmooth = (mWordCount ++ normalizer).reduceByKey(_ + _)
+    val eSmooth = (eWordCount ++ normalizer).reduceByKey(_ + _)
+
+    val totalSmooth = (docTotal ++ normalizer).reduceByKey(_ + _)
+
+    val cFraction = cSmooth.join(totalSmooth).mapValues((t:(Double,Double))=>t._1/t._2)
+    val gFraction = gSmooth.join(totalSmooth).mapValues((t:(Double,Double))=>t._1/t._2)
+    val mFraction = mSmooth.join(totalSmooth).mapValues((t:(Double,Double))=>t._1/t._2)
+    val eFraction = eSmooth.join(totalSmooth).mapValues((t:(Double,Double))=>t._1/t._2)
 
     val totalDocs:Double = cDocs.count()+gDocs.count()+mDocs.count()+eDocs.count()
 
@@ -187,12 +196,6 @@ object Main {
       val eFound = tWordCount.join(eFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
       val eConf = eFound.first._2._2*ePrior
 
-/*      println("###################################")
-      println(s"CCAT: $cConf")
-      println(s"GCAT: $gConf")
-      println(s"MCAT: $mConf")
-      println(s"ECAT: $eConf")
-      println("###################################")*/
 
       val confs:Map[Double, String] = Map(cConf->"CCAT",gConf->"GCAT",mConf->"MCAT",eConf->"ECAT")
 
