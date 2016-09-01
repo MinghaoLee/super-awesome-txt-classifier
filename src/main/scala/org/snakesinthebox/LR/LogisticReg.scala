@@ -10,6 +10,7 @@ import org.snakesinthebox.preprocessing.Preprocessor
 object LogisticReg {
 
   val learningRate = .01
+  val lambda = 2
 
 
   val conf = ConfigFactory.load()
@@ -80,7 +81,7 @@ object LogisticReg {
     .map(word => (word, 1.0))
     .reduceByKey(_ + _)
 
-  val cWeights = cWordCount.mapValues((value) => 1.0)
+  var cWeights = cWordCount.mapValues((value) => 1.0)
 
   val gClean = gData.mapPartitions {
     partition =>
@@ -91,7 +92,7 @@ object LogisticReg {
     .map(word => (word, 1.0))
     .reduceByKey(_ + _)
 
-  val gWeights = cWordCount.mapValues((value) => 1.0)
+  var gWeights = cWordCount.mapValues((value) => 1.0)
 
   val mClean = mData.mapPartitions {
     partition =>
@@ -102,7 +103,7 @@ object LogisticReg {
     .map(word => (word, 1.0))
     .reduceByKey(_ + _)
 
-  val mWeights = cWordCount.mapValues((value) => 1.0)
+  var mWeights = cWordCount.mapValues((value) => 1.0)
 
   val eClean = eData.mapPartitions {
     partition =>
@@ -113,7 +114,7 @@ object LogisticReg {
     .map(word => (word, 1.0))
     .reduceByKey(_ + _)
 
-  val eWeights = cWordCount.mapValues((value) => 1.0)
+  var eWeights = cWordCount.mapValues((value) => 1.0)
 
   def sumWeightFunction(cat :String) :Double = {
     val accum = sc.doubleAccumulator
@@ -147,6 +148,25 @@ object LogisticReg {
     )
     denominator += 1.0
     return numerator/denominator
+  }
+
+  def changeWeights(cat: String) :Unit = {
+    if (cat == "CCAT") {
+      val probSum = learningRate * ( (1 - calculateTrainingProb("CCAT")) - (calculateTrainingProb("GCAT") + calculateTrainingProb("MCAT") + calculateTrainingProb("ECAT")) )
+      cWeights = cWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
+    }
+    else if (cat == "GCAT") {
+      val probSum = learningRate * ( (1 - calculateTrainingProb("GCAT")) - (calculateTrainingProb("CCAT") + calculateTrainingProb("MCAT") + calculateTrainingProb("ECAT")) )
+      cWeights = cWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
+    }
+    else if (cat == "MCAT") {
+      val probSum = learningRate * ( (1 - calculateTrainingProb("MCAT")) - (calculateTrainingProb("CCAT") + calculateTrainingProb("GCAT") + calculateTrainingProb("ECAT")) )
+      cWeights = cWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
+    }
+    else {
+      val probSum = learningRate * ( (1 - calculateTrainingProb("ECAT")) - (calculateTrainingProb("CCAT") + calculateTrainingProb("GCAT") + calculateTrainingProb("MCAT")) )
+      cWeights = cWeights.mapValues( value => value + probSum - (learningRate * lambda * value) )
+    }
   }
 
 }
