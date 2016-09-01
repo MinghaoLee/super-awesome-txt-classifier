@@ -16,7 +16,26 @@ object Main {
     * @note This is for testing the preprocessing and will need to be moved elsewhere on deploy
     * @param args commandline argument to driver
     */
+
   def main(args: Array[String]): Unit = {
+    val conf = ConfigFactory.load()
+
+    val sparkConf = new SparkConf().setAppName(conf.getString("spark.appName"))
+    val sc = new SparkContext(sparkConf)
+
+    val trainData = sc.textFile(conf.getString("data.train.doc.path"))
+    val testData = sc.textFile(conf.getString("data.test.doc.path"))
+    val categories = sc.textFile(conf.getString("data.train.cat.path"))
+    val stopWords = sc.textFile(conf.getString("data.stopwords.path"))
+
+    val stopWordsSet = stopWords.collect.toSet
+    val stopWordsBC: Broadcast[Set[String]] = sc.broadcast(stopWordsSet)
+
+    NaiveBayes.train(trainData,categories,stopWordsBC,Array("CCAT","MCAT","GCAT","ECAT"))
+    println(NaiveBayes.test(testData,sc))
+  }
+
+/*  def main(args: Array[String]): Unit = {
 
     val conf = ConfigFactory.load()
 
@@ -184,5 +203,6 @@ object Main {
       confs.maxBy(_._1)._2
 
     }
-  }
+  }*/
+
 }

@@ -39,14 +39,16 @@ object NaiveBayes extends NBData with Serializable {
     * @param trainData
     * @param catData
     * @param stopWords
-    * @param c
+    * @param a
     */
-  def train(trainData: RDD[String], catData: RDD[String], stopWords: Broadcast[Set[String]], c: Array[String]): Unit = {
+  def train(trainData: RDD[String], catData: RDD[String], stopWords: Broadcast[Set[String]], a: Array[String]): Unit = {
     stopWordsBC = stopWords
-    categories = c
+    categories = a
     val KVData = zip(catData, trainData)
+    val catDocCount:ListBuffer[Double]=ListBuffer()
     for (cat <- categories) {
       val catData = categorize(KVData, cat)
+      catDocCount.append(catData.count())
       totalDocsCount = totalDocsCount + catData.count()
       val cleanData = clean(catData.values)
       val cleanData2 = removeStopWords(cleanData)
@@ -58,8 +60,11 @@ object NaiveBayes extends NBData with Serializable {
     val totalSmooth = smooth(totalWords, normalizer)
     for (cat <- catDocsSmooth) {
       catFractions.append(trainFractions(cat, totalSmooth))
-      priors.append(prior(cat.count(), totalDocsCount))
     }
+    for (count<-catDocCount){
+      priors.append(prior(count,totalDocsCount))
+    }
+    priors.foreach(println)
   }
 
   /**
@@ -98,20 +103,19 @@ object NaiveBayes extends NBData with Serializable {
       .reduceByKey(_ + _)
     val testDataSmooth = smooth(tWordCount, normalizer)
 
-    val results: ListBuffer[Double] = ()
+    val results: ListBuffer[Double] = ListBuffer()
 
     var i = 0
     for (cat <- catFractions) {
       val found = testDataSmooth.join(cat).reduceByKey((c: (Double, Double), t: (Double, Double)) => (c._1 + c._2, t._1 * t._2))
-      results.append(found.first._2._2 * priors(i))
-      i += i + 1
+      results.append(found.first._2._2)
+      i = i + 1
     }
 
-    val confs: Map[Double, String] = for (j <- categories.length) {
-      Map(results(j) -> categories(j))
-    }
-
-    confs.maxBy(_._1)._2
+    println("####################")
+    results.foreach(println)
+    println("####################")
+    return ""
 
   }
 
@@ -211,10 +215,10 @@ object NaiveBayes extends NBData with Serializable {
   override var stopWordsBC: Broadcast[Set[String]] = _
   override var totalWords: RDD[(String, Double)] = _
   override var normalizer: RDD[(String, Double)] = _
-  override var catDocs: ListBuffer[RDD[(String, Double)]] = _
-  override var catDocsSmooth: ListBuffer[RDD[(String, Double)]] = _
+  override var catDocs: ListBuffer[RDD[(String, Double)]] = ListBuffer()
+  override var catDocsSmooth: ListBuffer[RDD[(String, Double)]] = ListBuffer()
   override var totalDocsCount: Double = _
-  override var catFractions: ListBuffer[RDD[(String, Double)]] = _
-  override var priors: ListBuffer[Double] = _
-  override var categories: Array[String] = _
+  override var catFractions: ListBuffer[RDD[(String, Double)]] = ListBuffer()
+  override var priors: ListBuffer[Double] = ListBuffer()
+  override var categories: Array[String] = Array()
 }
