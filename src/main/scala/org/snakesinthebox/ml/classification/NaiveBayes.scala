@@ -199,6 +199,8 @@ object NaiveBayes extends NBData with Serializable {
     * @return
     */
   def trainFractions(catSmooth: RDD[(String, Double)], totalSmooth: RDD[(String, Double)]): RDD[(String, Double)] = {
+    catSmooth.foreach(println)
+    System.exit(0)
     catSmooth.join(totalSmooth).mapValues((t: (Double, Double)) => t._1 / t._2)
   }
 
