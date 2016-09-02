@@ -20,8 +20,12 @@ package org.snakesinthebox.preprocessing
   *         technical debt is > 9000
   */
 
+import java.io.{File, PrintWriter}
+
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.collection.mutable.ListBuffer
 
 /**
   * Driver object
@@ -155,12 +159,6 @@ object Main {
 
     val totalDocs:Double = cDocs.count()+gDocs.count()+mDocs.count()+eDocs.count()
 
-    val stuffs:Array[String] = testData.collect()
-
-    for(doc<-stuffs){
-      println(coolNP(doc))
-    }
-
     def coolNP(doc:String):String={
 
       val docRDD = sc.parallelize(List(doc))
@@ -208,5 +206,20 @@ object Main {
       confs.maxBy(_._1)._2
 
     }
+
+    val stuffs:Array[String] = testData.collect()
+
+    val output:ListBuffer[String]=ListBuffer()
+
+    for(doc<-stuffs){
+      output.append(coolNP(doc))
+    }
+    val writer = new PrintWriter(new File(conf.getString("out.file.path")))
+    for(o<-output){
+      writer.write(o)
+      writer.write("\n")
+    }
+    writer.close()
+
   }
 }
