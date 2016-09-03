@@ -20,8 +20,12 @@ package org.snakesinthebox.preprocessing
   *         technical debt is > 9000
   */
 
+import java.io.{File, PrintWriter}
+
 import com.typesafe.config.ConfigFactory
 import org.apache.spark.{SparkConf, SparkContext}
+
+import scala.collection.mutable.ListBuffer
 
 /**
   * Driver object
@@ -139,21 +143,26 @@ object Main {
     val docTotal = (cWordCount ++ gWordCount ++ mWordCount ++ eWordCount)
       .reduceByKey(_ + _)
 
-    val cFraction = cWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
-    val gFraction = gWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
-    val mFraction = mWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
-    val eFraction = eWordCount.join(docTotal).mapValues((t:(Double,Double))=>t._1/t._2)
+    val normalizer = docTotal.map(k => (k._1, 1.0))
+
+    val cSmooth = (cWordCount ++ normalizer).reduceByKey(_ + _)
+    val gSmooth = (gWordCount ++ normalizer).reduceByKey(_ + _)
+    val mSmooth = (mWordCount ++ normalizer).reduceByKey(_ + _)
+    val eSmooth = (eWordCount ++ normalizer).reduceByKey(_ + _)
+
+    val totalSmooth = (docTotal ++ normalizer).reduceByKey(_ + _)
+
+    val cFraction = cSmooth.join(totalSmooth).mapValues((t:(Double,Double))=>t._1/t._2)
+    val gFraction = gSmooth.join(totalSmooth).mapValues((t:(Double,Double))=>t._1/t._2)
+    val mFraction = mSmooth.join(totalSmooth).mapValues((t:(Double,Double))=>t._1/t._2)
+    val eFraction = eSmooth.join(totalSmooth).mapValues((t:(Double,Double))=>t._1/t._2)
 
     val totalDocs:Double = cDocs.count()+gDocs.count()+mDocs.count()+eDocs.count()
 
-    val stuffs:Array[String] = testData.collect()
-
-    for(doc<-stuffs){
-      println(coolNP(doc))
-    }
-
     def coolNP(doc:String):String={
+
       val docRDD = sc.parallelize(List(doc))
+
       val tData = docRDD
         .flatMap(word => word.toString.split(" "))
         .filter(Preprocessor.removeNumbers)
@@ -161,43 +170,56 @@ object Main {
         .map(Preprocessor.removeForwardSlash)
         .map(Preprocessor.removePunctuation)
         .map(word => word.toLowerCase())
+
       val tClean = tData.mapPartitions {
         partition =>
           val stopWordsSet = stopWordsBC.value
           partition.filter(word => !stopWordsSet.contains(word))
       }
+
       val tWordCount = tClean
         .map(word => (word, 1.0))
         .reduceByKey(_ + _)
 
+      val testSmooth = (tWordCount ++ normalizer).reduceByKey(_ + _)
+
 
       val cPrior = cDocs.count()/totalDocs
-      val cFound = tWordCount.join(cFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val cFound = tWordCount.join(cFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(0,c._1*c._2*t._1*t._2))
       val cConf = cFound.first._2._2*cPrior
 
       val gPrior = gDocs.count()/totalDocs
-      val gFound = tWordCount.join(gFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val gFound = tWordCount.join(gFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(0,c._1*c._2*t._1*t._2))
       val gConf = gFound.first._2._2*gPrior
 
       val mPrior = mDocs.count()/totalDocs
-      val mFound = tWordCount.join(mFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val mFound = tWordCount.join(mFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(0,c._1*c._2*t._1*t._2))
       val mConf = mFound.first._2._2*mPrior
 
       val ePrior = eDocs.count()/totalDocs
-      val eFound = tWordCount.join(eFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(c._1+c._2,t._1*t._2))
+      val eFound = tWordCount.join(eFraction).reduceByKey((c:(Double,Double),t:(Double,Double))=>(0,c._1*c._2*t._1*t._2))
       val eConf = eFound.first._2._2*ePrior
 
-/*      println("###################################")
-      println(s"CCAT: $cConf")
-      println(s"GCAT: $gConf")
-      println(s"MCAT: $mConf")
-      println(s"ECAT: $eConf")
-      println("###################################")*/
 
       val confs:Map[Double, String] = Map(cConf->"CCAT",gConf->"GCAT",mConf->"MCAT",eConf->"ECAT")
 
       confs.maxBy(_._1)._2
 
     }
+
+    val stuffs:Array[String] = testData.collect()
+
+    val output:ListBuffer[String]=ListBuffer()
+
+    for(doc<-stuffs){
+      output.append(coolNP(doc))
+    }
+    val writer = new PrintWriter(new File(conf.getString("out.file.path")))
+    for(o<-output){
+      writer.write(o)
+      writer.write("\n")
+    }
+    writer.close()
+
   }
 }
